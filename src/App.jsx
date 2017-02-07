@@ -6,8 +6,9 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentUser: {name: "Anonymous"}, // optional. if currentUser is not defined, it means the user is Anonymous
-      messages: []
+      currentUser: {name: "Anonymous", colour: "black"}, // optional. if currentUser is not defined, it means the user is Anonymous
+      messages: [],
+      usersOnline: 0,
     };
 
     this.webSocket = null;
@@ -19,11 +20,13 @@ class App extends Component {
   updateUsername(event) {
     if(event.keyCode === 13) {
       const prevName = this.state.currentUser.name;
-      this.setState({currentUser: {name: event.target.value}} );
-      this.webSocket.send(JSON.stringify(
-        { type: "postNotification",
-          content: `${prevName} has changed their name to ${this.state.currentUser.name}`
+      this.setState({currentUser: {name: event.target.value, colour: this.state.currentUser.colour}}, () => {
+        console.log(this.state.currentUser);
+        this.webSocket.send(JSON.stringify(
+          { type: "postNotification",
+            content: `${prevName} has changed their name to ${this.state.currentUser.name}`
         }))
+      });
     }
   }
 
@@ -32,7 +35,9 @@ class App extends Component {
       const newMessage = {
         type: "postMessage",
         username: this.state.currentUser.name,
-        content: event.target.value };
+        content: event.target.value,
+        colour: this.state.currentUser.colour
+      };
 
       this.webSocket.send(JSON.stringify(newMessage));
 
@@ -45,6 +50,9 @@ class App extends Component {
       <div>
         <nav className="navbar">
           <a href="/" className="navbar-brand">Chatty</a>
+          <span className="navbar-users">
+            {this.state.usersOnline} Users Online
+          </span>
         </nav>
         <MessageList messages={this.state.messages} />
         <Chatbar
@@ -62,30 +70,24 @@ class App extends Component {
 
     this.webSocket.onmessage = (event) => {
       const incomingObj = JSON.parse(event.data);
-      let newIncomingMsg = {};
       let messages = [];
 
       switch(incomingObj.type) {
         case "incomingMessage":
-          newIncomingMsg = {
-            id: incomingObj.id,
-            username: incomingObj.username,
-            content: incomingObj.content
-          }
-          messages = this.state.messages.concat(newIncomingMsg);
+        case "incomingNotification":
+          messages = this.state.messages.concat(incomingObj);
           this.setState({messages: messages});
           break;
-        case "incomingNotification":
-          newIncomingMsg = {
-            id: incomingObj.id,
-            content: incomingObj.content
-          }
-          messages = this.state.messages.concat(newIncomingMsg);
-          this.setState({messages: messages});
+        case "userCount":
+          this.setState({usersOnline: incomingObj.content});
+          break;
+        case "userColour":
+          this.setState({currentUser: { name: this.state.currentUser.name, colour: incomingObj.content}});
           break;
         default:
           console.log(`Unknown event type: ${incomingObj.type}`);
       }
+
     }
   }
 
