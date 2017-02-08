@@ -21,7 +21,6 @@ class App extends Component {
     if(event.keyCode === 13) {
       const prevName = this.state.currentUser.name;
       this.setState({currentUser: {name: event.target.value, colour: this.state.currentUser.colour}}, () => {
-        console.log(this.state.currentUser);
         this.webSocket.send(JSON.stringify(
           { type: "postNotification",
             content: `${prevName} has changed their name to ${this.state.currentUser.name}`
@@ -36,7 +35,13 @@ class App extends Component {
         type: "postMessage",
         username: this.state.currentUser.name,
         content: event.target.value,
-        colour: this.state.currentUser.colour
+        colour: this.state.currentUser.colour,
+        hasImages: false
+      };
+
+      // check for images and add hasimages true to outgoing
+      if (/\b.+(\.png|\.jpg|\.gif)\b/.test(event.target.value)) {
+        newMessage.hasImages = true;
       };
 
       this.webSocket.send(JSON.stringify(newMessage));
