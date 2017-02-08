@@ -36,12 +36,18 @@ class App extends Component {
         username: this.state.currentUser.name,
         content: event.target.value,
         colour: this.state.currentUser.colour,
-        hasImages: false
+        hasImages: false,
+        speech: false
       };
 
       // check for images and add hasimages true to outgoing
       if (/\b.+(\.png|\.jpg|\.gif)\b/.test(event.target.value)) {
         newMessage.hasImages = true;
+      };
+
+      console.log(event.target.value);
+      if (/^<say>\s.+/.test(event.target.value)) {
+        newMessage.speech = true;
       };
 
       this.webSocket.send(JSON.stringify(newMessage));
