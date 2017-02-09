@@ -13,7 +13,8 @@ class Message extends Component {
           if (index === messages.length - 1) {
             const utterance = new SpeechSynthesisUtterance(newContent);
             utterance.rate = 0.4;
-            utterance.pitch = 5;
+            utterance.pitch = 2.5;
+            window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utterance);
           }
         }
