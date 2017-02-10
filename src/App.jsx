@@ -17,43 +17,36 @@ class App extends Component {
     this.addMessage = this.addMessage.bind(this);
   }
 
-  updateUsername(event) {
-    if(event.keyCode === 13) {
-      const prevName = this.state.currentUser.name;
-      this.setState({currentUser: {name: event.target.value, colour: this.state.currentUser.colour}}, () => {
-        this.webSocket.send(JSON.stringify(
-          { type: "postNotification",
-            content: `${prevName} has changed their name to ${this.state.currentUser.name}`
-        }))
-      });
-    }
+  updateUsername(newName) {
+    const prevName = this.state.currentUser.name;
+    this.setState({currentUser: {name: newName, colour: this.state.currentUser.colour}}, () => {
+      this.webSocket.send(JSON.stringify(
+        { type: "postNotification",
+          content: `${prevName} has changed their name to ${this.state.currentUser.name}`
+      }))
+    });
   }
 
-  addMessage(event) {
-    if(event.keyCode === 13) {
-      const newMessage = {
-        type: "postMessage",
-        username: this.state.currentUser.name,
-        content: event.target.value,
-        colour: this.state.currentUser.colour,
-        hasImages: false,
-        speech: false
-      };
+  addMessage(messageText) {
+    const newMessage = {
+      type: "postMessage",
+      username: this.state.currentUser.name,
+      content: messageText,
+      colour: this.state.currentUser.colour,
+      hasImages: false,
+      speech: false
+    };
 
-      // check for images and add hasimages true to outgoing
-      if (/\b.+(\.png|\.jpg|\.gif)\b/.test(event.target.value)) {
-        newMessage.hasImages = true;
-      };
+    // check for images and add hasimages true to outgoing
+    if (/\b.+(\.png|\.jpg|\.gif)\b/.test(messageText)) {
+      newMessage.hasImages = true;
+    };
 
-      console.log(event.target.value);
-      if (/^<say>\s.+/.test(event.target.value)) {
-        newMessage.speech = true;
-      };
+    if (/^<say>\s.+/.test(messageText)) {
+      newMessage.speech = true;
+    };
 
-      this.webSocket.send(JSON.stringify(newMessage));
-
-      event.target.value = "";
-    }
+    this.webSocket.send(JSON.stringify(newMessage));
   }
 
   render() {
