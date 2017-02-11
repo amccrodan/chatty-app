@@ -10,18 +10,16 @@ class MessageList extends Component {
       if (message.type === "incomingMessage") {
         let newMessage = message;
 
-        let speechContent = [message.content];
-
         if (message.speech) {
-          speechContent = message.content.substring(5);
+          let speechContent = message.content.substring(5);
           newMessage.content = speechContent;
-          if (index === messages.length - 1) {
-            const utterance = new SpeechSynthesisUtterance(speechContent);
-            utterance.rate = 0.4;
-            utterance.pitch = 2.5;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-          }
+
+          const utterance = new SpeechSynthesisUtterance(speechContent);
+          utterance.rate = 0.4;
+          utterance.pitch = 2.5;
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(utterance);
+          message.speech = false;
         }
 
         if (message.hasImages) {
